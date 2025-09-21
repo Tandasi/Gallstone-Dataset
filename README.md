@@ -14,7 +14,7 @@ This project implements a machine learning model to predict gallstone disease us
 **Author:** GIFT TANDASI  
 **Dataset:** UCI Gallstone Dataset (319 samples, 39 features)  
 **Repository:** https://github.com/Tandasi/Gallstone-Dataset 
-**Streamlit App:** https://gallstone-dataset-vawgf9cxja65afuhdyj9jk.streamlit.app/
+**Streamlit App:** https://gallstone-dataset-vawgf9cxja65afuhdyj9jk.streamlit.app
 
 ## Key Features
 
