@@ -93,35 +93,6 @@ gallstone-1/
 └── README.md                           # This file
 ```
 
-## Deployment Options
-
-### Option 1: Streamlit Cloud (Recommended for Demo)
-1. Push code to GitHub
-2. Visit [share.streamlit.io](https://share.streamlit.io)
-3. Connect repository and deploy
-4. **Pros:** Free, easy, no maintenance
-5. **Best for:** Research, demos, portfolios
-
-### Option 2: Heroku (Quick Production)
-```bash
-heroku create your-app-name
-git push heroku main
-```
-**Pros:** Fast deployment, good for prototypes  
-**Best for:** MVPs, small-scale applications
-
-### Option 3: Docker (Scalable)
-```bash
-docker build -t gallstone-api .
-docker run -p 5000:5000 gallstone-api
-```
-**Pros:** Consistent environment, scalable  
-**Best for:** Production, cloud deployment
-
-### Option 4: AWS/Azure (Enterprise)
-- Use SageMaker, Azure ML Studio
-- HIPAA-compliant for healthcare
-- **Best for:** Clinical integration, large scale
 
 ## API Usage
 
