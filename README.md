@@ -13,7 +13,8 @@ This project implements a machine learning model to predict gallstone disease us
 
 **Author:** GIFT TANDASI  
 **Dataset:** UCI Gallstone Dataset (319 samples, 39 features)  
-**Repository:** https://github.com/Tandasi/Gallstone-Dataset  
+**Repository:** https://github.com/Tandasi/Gallstone-Dataset 
+**Streamlit App:** https://gallstone-dataset-vawgf9cxja65afuhdyj9jk.streamlit.app/
 
 ## Key Features
 
@@ -85,11 +86,7 @@ gallstone-1/
 ├── dataset-uci.csv                     # Dataset file
 ├── gallstone_prediction_model.pkl      # Trained model
 ├── streamlit_app.py                    # Web application
-├── flask_app.py                        # REST API
 ├── requirements.txt                    # Dependencies
-├── Dockerfile                          # Container setup
-├── docker-compose.yml                  # Multi-container setup
-├── Procfile                            # Heroku deployment
 └── README.md                           # This file
 ```
 
