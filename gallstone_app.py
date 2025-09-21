@@ -25,7 +25,7 @@ def load_model():
         with open(model_path, 'rb') as f:
             model_artifacts = pickle.load(f)
         return model_artifacts
-    except Exception as e:
+    except (pickle.UnpicklingError, EOFError, FileNotFoundError, PermissionError) as e:
         st.error(f" Error loading model: {str(e)}")
         return None
 
@@ -404,7 +404,7 @@ def show_dataset_analysis():
 
             # Bioimpedance Features (simplified for cloud)
             st.markdown("### Key Bioimpedance Features")
-            bio_cols = ['Total Body Water (TBW)', 'Lean Mass (LM) (%)', 'Body Fat (%)']
+            bio_cols = ['Total Body Water (TBW)', 'Lean Mass (LM) (%)', 'Total Body Fat Ratio (TBFR) (%)']
 
             for i in range(0, len(bio_cols), 2):
                 cols = st.columns(2)
