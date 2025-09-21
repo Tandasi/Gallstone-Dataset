@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.3.0-orange.svg)](https://scikit-learn.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.25.0-red.svg)](https://streamlit.io)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Overview
@@ -12,14 +12,15 @@
 This project implements a machine learning model to predict gallstone disease using demographic, bioimpedance, and laboratory data. The model achieves **73.4% accuracy** with explainable AI features using SHAP analysis.
 
 **Author:** GIFT TANDASI  
-**Dataset:** UCI Gallstone Dataset (319 samples, 39 features)  
+**Dataset:** UCI Gallstone Dataset (319 samples, 38 features)  
 **Repository:** https://github.com/Tandasi/Gallstone-Dataset  
+**Live Demo:** https://gallstone-dataset-vawgf9cxja65afuhdyj9jk.streamlit.app/  
 
 ## Key Features
 
 - **High Accuracy:** 73.4% test accuracy with 0.783 ROC-AUC
 - **Explainable AI:** SHAP analysis for transparent predictions
-- **Multiple Deployment Options:** Streamlit, Flask API, Docker
+- **Web Deployment:** Streamlit Cloud deployment ready
 - **Clinical Ready:** Designed for healthcare integration
 - **Complete Pipeline:** From data loading to deployment
 
@@ -28,16 +29,16 @@ This project implements a machine learning model to predict gallstone disease us
 | Metric | Score |
 |--------|-------|
 | **Test Accuracy** | 73.4% |
-| **Precision** | 76.7% |
-| **Recall** | 69.7% |
-| **F1-Score** | 73.0% |
+| **Precision** | 81.8% |
+| **Recall** | 58.1% |
+| **F1-Score** | 67.9% |
 | **ROC-AUC** | 0.783 |
 
 ## Dataset Information
 
 - **Source:** UCI Machine Learning Repository
 - **Samples:** 319 patients
-- **Features:** 39 (demographic, bioimpedance, laboratory)
+- **Features:** 38 input features (demographic, bioimpedance, laboratory)
 - **Target:** Binary classification (Gallstone vs No Gallstone)
 - **Balance:** 50.5% no gallstone, 49.5% gallstone
 - **Missing Values:** None
@@ -69,12 +70,7 @@ jupyter notebook UCI.ipynb
 
 ### 3. Run Web Application
 ```bash
-streamlit run streamlit_app.py
-```
-
-### 4. Run API Server
-```bash
-python flask_app.py
+streamlit run gallstone_app.py
 ```
 
 ## Project Structure
@@ -84,12 +80,8 @@ gallstone-1/
 ├── UCI.ipynb                           # Main analysis notebook
 ├── dataset-uci.csv                     # Dataset file
 ├── gallstone_prediction_model.pkl      # Trained model
-├── streamlit_app.py                    # Web application
-├── flask_app.py                        # REST API
+├── gallstone_app.py                    # Streamlit web application
 ├── requirements.txt                    # Dependencies
-├── Dockerfile                          # Container setup
-├── docker-compose.yml                  # Multi-container setup
-├── Procfile                            # Heroku deployment
 └── README.md                           # This file
 ```
 
@@ -171,18 +163,14 @@ curl -X POST http://localhost:5000/predict \
 
 ### Core Dependencies
 ```txt
-pandas==1.5.3
-numpy==1.24.3
-scikit-learn==1.3.0
-xgboost==1.7.6
-matplotlib==3.7.2
-seaborn==0.12.2
-shap==0.42.1
-```
-
-### Web Framework
-```txt
-streamlit==1.25.0
+streamlit>=1.28.0
+pandas>=1.5.3
+numpy>=1.24.3
+matplotlib>=3.8.0
+seaborn>=0.12.2
+shap>=0.42.1
+scikit-learn>=1.3.0
+pillow>=10.0.0
 ```
 
 ### Development
@@ -193,19 +181,20 @@ notebook==6.5.4
 
 ## Testing
 
-### Unit Tests
+### Basic Functionality Test
 ```bash
-python -m pytest tests/
+# Test that the Streamlit app starts without errors
+streamlit run gallstone_app.py --server.headless true --server.port 8501
 ```
 
-### Model Validation
+### Model Loading Test
 ```bash
-python validate_model.py
+python -c "import pickle; model = pickle.load(open('gallstone_prediction_model.pkl', 'rb')); print('Model loaded successfully')"
 ```
 
-### API Testing
+### Data Loading Test
 ```bash
-python test_api.py
+python -c "import pandas as pd; df = pd.read_csv('dataset-uci.csv'); print(f'Dataset loaded: {df.shape[0]} samples, {df.shape[1]} features')"
 ```
 
 ## Performance Monitoring
@@ -237,8 +226,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact & Support
 
 **Author:** GIFT TANDASI  
-**Email:** [gift@anga-tech.com]   
-**GitHub:** (https://github.com/Tandasi)]  
+**Email:** gift@anga-tech.com  
+**GitHub:** https://github.com/Tandasi  
 
 ## Acknowledgments
 
