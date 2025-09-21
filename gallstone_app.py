@@ -263,8 +263,12 @@ def show_dataset_analysis():
     st.header("Dataset Analysis & Exploration")
 
     try:
-        # Load and display dataset info
-        df = pd.read_csv('dataset-uci.csv')
+        # Load and cache dataset
+        @st.cache_data
+        def load_dataset():
+            return pd.read_csv('dataset-uci.csv')
+        
+        df = load_dataset()
         st.markdown(f"**Dataset Overview:** {df.shape[0]} patients × {df.shape[1]} features")
 
         col_info1, col_info2 = st.columns(2)
@@ -318,7 +322,7 @@ def show_dataset_analysis():
 
             with col_viz1:
                 # Pie chart for target distribution
-                fig, ax = plt.subplots(figsize=(6, 6))
+                fig, ax = plt.subplots(figsize=(5, 5))  # Reduced size for cloud compatibility
                 target_counts = df['Gallstone Status'].value_counts()
                 labels = ['No Gallstone', 'Gallstone']
                 sizes = [target_counts.get(0, 0), target_counts.get(1, 0)]
@@ -327,20 +331,22 @@ def show_dataset_analysis():
                 ax.axis('equal')
                 ax.set_title('Gallstone Status Distribution')
                 st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
             with col_viz2:
                 # Age distribution histogram
-                fig, ax = plt.subplots(figsize=(8, 5))
-                sns.histplot(data=df, x='Age', hue='Gallstone Status', multiple="stack", ax=ax)
+                fig, ax = plt.subplots(figsize=(6, 4))  # Reduced size
+                sns.histplot(data=df, x='Age', hue='Gallstone Status', multiple="stack", ax=ax, bins=20)
                 ax.set_title('Age Distribution by Gallstone Status')
                 ax.set_xlabel('Age (years)')
                 ax.set_ylabel('Count')
                 st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
             # Gender distribution
             st.markdown("### Gender Distribution")
             gender_counts = df['Gender'].value_counts()
-            fig, ax = plt.subplots(figsize=(6, 4))
+            fig, ax = plt.subplots(figsize=(5, 3))  # Reduced size
             gender_labels = ['Female', 'Male']
             gender_sizes = [gender_counts.get(0, 0), gender_counts.get(1, 0)]
             ax.bar(gender_labels, gender_sizes, color=['#ff9999', '#66b3ff'])
@@ -349,163 +355,122 @@ def show_dataset_analysis():
             for i, v in enumerate(gender_sizes):
                 ax.text(i, v + 1, str(v), ha='center')
             st.pyplot(fig)
+            plt.close(fig)  # Free memory
 
             # BMI Distribution
             st.markdown("### BMI Distribution Analysis")
             col_bmi1, col_bmi2 = st.columns(2)
 
             with col_bmi1:
-                fig, ax = plt.subplots(figsize=(8, 5))
-                sns.histplot(data=df, x='Body Mass Index (BMI)', hue='Gallstone Status', multiple="stack", ax=ax)
+                fig, ax = plt.subplots(figsize=(6, 4))  # Reduced size
+                sns.histplot(data=df, x='Body Mass Index (BMI)', hue='Gallstone Status', multiple="stack", ax=ax, bins=15)
                 ax.set_title('BMI Distribution by Gallstone Status')
                 ax.set_xlabel('BMI')
                 ax.set_ylabel('Count')
                 st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
             with col_bmi2:
-                fig, ax = plt.subplots(figsize=(8, 6))
+                fig, ax = plt.subplots(figsize=(6, 4))  # Reduced size
                 sns.boxplot(data=df, x='Gallstone Status', y='Body Mass Index (BMI)', ax=ax)
                 ax.set_title('BMI Box Plot by Gallstone Status')
+                ax.set_xticks([0, 1])
                 ax.set_xticklabels(['No Gallstone', 'Gallstone'])
                 ax.set_xlabel('Gallstone Status')
                 ax.set_ylabel('BMI')
                 st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
-            # Key Laboratory Values Distribution
-            st.markdown("### Key Laboratory Values Distribution")
-            lab_features = ['Glucose', 'Total Cholesterol (TC)', 'Triglyceride', 'C-Reactive Protein (CRP)', 'Vitamin D']
+            # Key Laboratory Values Distribution (simplified for cloud)
+            st.markdown("### Key Laboratory Values")
+            lab_cols = ['Glucose', 'Total Cholesterol (TC)', 'Triglyceride', 'C-Reactive Protein (CRP)']
 
-            for i in range(0, len(lab_features), 2):
+            for i in range(0, len(lab_cols), 2):
                 cols = st.columns(2)
                 for j in range(2):
-                    if i + j < len(lab_features):
-                        feature = lab_features[i + j]
+                    if i + j < len(lab_cols):
+                        feature = lab_cols[i + j]
                         with cols[j]:
-                            fig, ax = plt.subplots(figsize=(6, 4))
-                            sns.histplot(data=df, x=feature, hue='Gallstone Status', multiple="stack", ax=ax)
-                            ax.set_title(f'{feature} Distribution')
-                            ax.set_xlabel(feature)
-                            ax.set_ylabel('Count')
-                            st.pyplot(fig)
+                            try:
+                                fig, ax = plt.subplots(figsize=(5, 3))  # Reduced size
+                                sns.histplot(data=df, x=feature, hue='Gallstone Status', multiple="stack", ax=ax, bins=15)
+                                ax.set_title(f'{feature} Distribution')
+                                ax.set_xlabel(feature)
+                                ax.set_ylabel('Count')
+                                st.pyplot(fig)
+                                plt.close(fig)  # Free memory
+                            except Exception as plot_error:
+                                st.warning(f"Could not create plot for {feature}: {str(plot_error)}")
 
-            # Bioimpedance Features Distribution
-            st.markdown("### Bioimpedance Features Distribution")
-            bio_features = ['Total Body Water (TBW)', 'Extracellular Water (ECW)', 'Intracellular Water (ICW)',
-                          'Lean Mass (LM) (%)', 'Body Fat (%)', 'Hepatic Fat Accumulation (HFA)']
+            # Bioimpedance Features (simplified for cloud)
+            st.markdown("### Key Bioimpedance Features")
+            bio_cols = ['Total Body Water (TBW)', 'Lean Mass (LM) (%)', 'Body Fat (%)']
 
-            for i in range(0, len(bio_features), 2):
+            for i in range(0, len(bio_cols), 2):
                 cols = st.columns(2)
                 for j in range(2):
-                    if i + j < len(bio_features):
-                        feature = bio_features[i + j]
+                    if i + j < len(bio_cols):
+                        feature = bio_cols[i + j]
                         with cols[j]:
-                            fig, ax = plt.subplots(figsize=(6, 4))
-                            sns.histplot(data=df, x=feature, hue='Gallstone Status', multiple="stack", ax=ax)
-                            ax.set_title(f'{feature} Distribution')
-                            ax.set_xlabel(feature)
-                            ax.set_ylabel('Count')
-                            st.pyplot(fig)
+                            try:
+                                fig, ax = plt.subplots(figsize=(5, 3))  # Reduced size
+                                sns.histplot(data=df, x=feature, hue='Gallstone Status', multiple="stack", ax=ax, bins=15)
+                                ax.set_title(f'{feature} Distribution')
+                                ax.set_xlabel(feature)
+                                ax.set_ylabel('Count')
+                                st.pyplot(fig)
+                                plt.close(fig)  # Free memory
+                            except Exception as plot_error:
+                                st.warning(f"Could not create plot for {feature}: {str(plot_error)}")
 
         with viz_tab2:
-            st.markdown("### Feature Relationships")
+            st.markdown("### Key Feature Relationships")
 
             col_rel1, col_rel2 = st.columns(2)
 
             with col_rel1:
                 # BMI vs Age scatter plot
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='Age', y='Body Mass Index (BMI)', hue='Gallstone Status', ax=ax)
+                fig, ax = plt.subplots(figsize=(6, 4))  # Reduced size
+                sns.scatterplot(data=df, x='Age', y='Body Mass Index (BMI)', hue='Gallstone Status', ax=ax, alpha=0.6)
                 ax.set_title('BMI vs Age by Gallstone Status')
                 ax.set_xlabel('Age (years)')
                 ax.set_ylabel('BMI')
                 st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
             with col_rel2:
-                # Vitamin D vs Age
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='Age', y='Vitamin D', hue='Gallstone Status', ax=ax)
-                ax.set_title('Vitamin D vs Age by Gallstone Status')
-                ax.set_xlabel('Age (years)')
-                ax.set_ylabel('Vitamin D (ng/mL)')
+                # CRP vs BMI
+                fig, ax = plt.subplots(figsize=(6, 4))  # Reduced size
+                sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='C-Reactive Protein (CRP)', hue='Gallstone Status', ax=ax, alpha=0.6)
+                ax.set_title('CRP vs BMI by Gallstone Status')
+                ax.set_xlabel('BMI')
+                ax.set_ylabel('CRP (mg/L)')
                 st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
-            # CRP vs BMI
-            st.markdown("### Inflammation vs Body Composition")
-            fig, ax = plt.subplots(figsize=(8, 6))
-            sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='C-Reactive Protein (CRP)', hue='Gallstone Status', ax=ax)
-            ax.set_title('CRP vs BMI by Gallstone Status')
-            ax.set_xlabel('BMI')
-            ax.set_ylabel('CRP (mg/L)')
-            st.pyplot(fig)
-
-            # Additional relationship plots
-            st.markdown("### Metabolic Syndrome Indicators")
+            # Metabolic relationships
+            st.markdown("### Metabolic Indicators")
             col_met1, col_met2 = st.columns(2)
 
             with col_met1:
                 # Glucose vs BMI
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='Glucose', hue='Gallstone Status', ax=ax)
+                fig, ax = plt.subplots(figsize=(6, 4))  # Reduced size
+                sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='Glucose', hue='Gallstone Status', ax=ax, alpha=0.6)
                 ax.set_title('Glucose vs BMI by Gallstone Status')
                 ax.set_xlabel('BMI')
                 ax.set_ylabel('Glucose (mg/dL)')
                 st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
             with col_met2:
                 # Triglyceride vs HDL
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='High Density Lipoprotein (HDL)', y='Triglyceride', hue='Gallstone Status', ax=ax)
+                fig, ax = plt.subplots(figsize=(6, 4))  # Reduced size
+                sns.scatterplot(data=df, x='High Density Lipoprotein (HDL)', y='Triglyceride', hue='Gallstone Status', ax=ax, alpha=0.6)
                 ax.set_title('Triglyceride vs HDL by Gallstone Status')
                 ax.set_xlabel('HDL (mg/dL)')
                 ax.set_ylabel('Triglyceride (mg/dL)')
                 st.pyplot(fig)
-
-            # Liver function relationships
-            st.markdown("### Liver Function Analysis")
-            col_liver1, col_liver2 = st.columns(2)
-
-            with col_liver1:
-                # AST vs ALT
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='Alanin Aminotransferaz (ALT)', y='Aspartat Aminotransferaz (AST)', hue='Gallstone Status', ax=ax)
-                ax.set_title('AST vs ALT by Gallstone Status')
-                ax.set_xlabel('ALT (U/L)')
-                ax.set_ylabel('AST (U/L)')
-                # Add reference line for AST/ALT ratio
-                ax.plot([0, 200], [0, 200], 'r--', alpha=0.5, label='AST/ALT = 1')
-                ax.legend()
-                st.pyplot(fig)
-
-            with col_liver2:
-                # ALP vs GGT (if available) or ALP vs Age
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='Age', y='Alkaline Phosphatase (ALP)', hue='Gallstone Status', ax=ax)
-                ax.set_title('ALP vs Age by Gallstone Status')
-                ax.set_xlabel('Age (years)')
-                ax.set_ylabel('ALP (U/L)')
-                st.pyplot(fig)
-
-            # Bioimpedance relationships
-            st.markdown("### Body Composition Analysis")
-            col_bio1, col_bio2 = st.columns(2)
-
-            with col_bio1:
-                # Lean Mass vs Fat Mass
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='Lean Mass (LM) (%)', y='Body Fat (%)', hue='Gallstone Status', ax=ax)
-                ax.set_title('Lean Mass vs Body Fat by Gallstone Status')
-                ax.set_xlabel('Lean Mass (%)')
-                ax.set_ylabel('Body Fat (%)')
-                st.pyplot(fig)
-
-            with col_bio2:
-                # Hepatic Fat vs BMI
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='Hepatic Fat Accumulation (HFA)', hue='Gallstone Status', ax=ax)
-                ax.set_title('Hepatic Fat vs BMI by Gallstone Status')
-                ax.set_xlabel('BMI')
-                ax.set_ylabel('Hepatic Fat Accumulation')
-                st.pyplot(fig)
+                plt.close(fig)  # Free memory
 
         with viz_tab3:
             st.markdown("### Feature Correlations")
@@ -538,58 +503,18 @@ def show_dataset_analysis():
             ax.set_title('Top 10 Features Correlated with Gallstone Status')
             ax.set_xlabel('Absolute Correlation')
             st.pyplot(fig)
+            plt.close(fig)  # Free memory
 
-            # Extended correlation analysis
-            st.markdown("### Comprehensive Correlation Analysis")
-
-            # Include bioimpedance features
-            extended_cols = numeric_cols + [
-                'Total Body Water (TBW)', 'Extracellular Water (ECW)', 'Intracellular Water (ICW)',
-                'Extracellular Fluid/Total Body Water (ECF/TBW)', 'Lean Mass (LM) (%)',
-                'Body Fat (%)', 'Hepatic Fat Accumulation (HFA)', 'Obesity (%)'
-            ]
-
-            # Correlation with target variable
-            st.markdown("#### All Features vs Gallstone Status")
-            target_extended_corr = df[extended_cols + ['Gallstone Status']].corr()['Gallstone Status'].abs().sort_values(ascending=False)
-            target_extended_corr = target_extended_corr.drop('Gallstone Status')
-
-            fig, ax = plt.subplots(figsize=(12, 8))
-            target_extended_corr.plot(kind='barh', ax=ax, color='lightcoral')
-            ax.set_title('Feature Correlation with Gallstone Status (All Features)')
-            ax.set_xlabel('Absolute Correlation Coefficient')
-            st.pyplot(fig)
-
-            # Metabolic syndrome correlation matrix
-            st.markdown("#### Metabolic Syndrome Features Correlation")
-            metabolic_cols = ['Body Mass Index (BMI)', 'Glucose', 'Total Cholesterol (TC)',
-                            'Triglyceride', 'High Density Lipoprotein (HDL)', 'C-Reactive Protein (CRP)']
-
-            metabolic_corr = df[metabolic_cols].corr()
-
-            fig, ax = plt.subplots(figsize=(10, 8))
-            sns.heatmap(metabolic_corr, annot=True, cmap='YlOrRd', center=0,
-                       square=True, linewidths=0.5, ax=ax)
-            ax.set_title('Metabolic Syndrome Features Correlation Matrix')
+            # Simplified correlation matrix
+            st.markdown("### Key Clinical Features Correlation")
+            fig, ax = plt.subplots(figsize=(8, 6))  # Reduced size
+            sns.heatmap(corr_matrix, annot=False, cmap='coolwarm', center=0,
+                       square=True, ax=ax)  # Removed annotations for cloud compatibility
+            ax.set_title('Clinical Features Correlation Matrix')
             plt.xticks(rotation=45, ha='right')
             plt.yticks(rotation=0)
             st.pyplot(fig)
-
-            # Bioimpedance correlation matrix
-            st.markdown("#### Body Composition Features Correlation")
-            bio_cols = ['Total Body Water (TBW)', 'Extracellular Water (ECW)', 'Intracellular Water (ICW)',
-                       'Extracellular Fluid/Total Body Water (ECF/TBW)', 'Lean Mass (LM) (%)',
-                       'Body Fat (%)', 'Hepatic Fat Accumulation (HFA)', 'Obesity (%)']
-
-            bio_corr = df[bio_cols].corr()
-
-            fig, ax = plt.subplots(figsize=(12, 10))
-            sns.heatmap(bio_corr, annot=True, cmap='Blues', center=0,
-                       square=True, linewidths=0.5, ax=ax)
-            ax.set_title('Body Composition Features Correlation Matrix')
-            plt.xticks(rotation=45, ha='right')
-            plt.yticks(rotation=0)
-            st.pyplot(fig)
+            plt.close(fig)  # Free memory
 
     except Exception as e:
         st.error(f"Could not load dataset: {str(e)}")
