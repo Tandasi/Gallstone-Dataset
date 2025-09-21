@@ -93,35 +93,6 @@ gallstone-1/
 └── README.md                           # This file
 ```
 
-## Deployment Options
-
-### Option 1: Streamlit Cloud (Recommended for Demo)
-1. Push code to GitHub
-2. Visit [share.streamlit.io](https://share.streamlit.io)
-3. Connect repository and deploy
-4. **Pros:** Free, easy, no maintenance
-5. **Best for:** Research, demos, portfolios
-
-### Option 2: Heroku (Quick Production)
-```bash
-heroku create your-app-name
-git push heroku main
-```
-**Pros:** Fast deployment, good for prototypes  
-**Best for:** MVPs, small-scale applications
-
-### Option 3: Docker (Scalable)
-```bash
-docker build -t gallstone-api .
-docker run -p 5000:5000 gallstone-api
-```
-**Pros:** Consistent environment, scalable  
-**Best for:** Production, cloud deployment
-
-### Option 4: AWS/Azure (Enterprise)
-- Use SageMaker, Azure ML Studio
-- HIPAA-compliant for healthcare
-- **Best for:** Clinical integration, large scale
 
 ## API Usage
 
@@ -212,8 +183,6 @@ shap==0.42.1
 ### Web Framework
 ```txt
 streamlit==1.25.0
-flask==2.3.3
-gunicorn==21.2.0
 ```
 
 ### Development
@@ -268,9 +237,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact & Support
 
 **Author:** GIFT TANDASI  
-**Email:** [your.email@example.com]  
-**LinkedIn:** [Your LinkedIn Profile]  
-**GitHub:** [Your GitHub Profile]  
+**Email:** [gift@anga-tech.com]   
+**GitHub:** (https://github.com/Tandasi)]  
 
 ## Acknowledgments
 
@@ -301,6 +269,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This tool is for **research and educational purposes only**. Always consult qualified healthcare professionals for medical decisions. The model should not be used as the sole basis for clinical diagnosis or treatment decisions.
 
----
-
-**Built with love for advancing healthcare through AI**
