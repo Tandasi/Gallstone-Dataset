@@ -98,13 +98,24 @@ def show_prediction_interface(model_artifacts):
             vitamin_d = st.number_input("Vitamin D (ng/mL)", min_value=0.0, max_value=100.0, value=25.0)
 
         with col_add2:
-            # Bioimpedance measurements (simplified for user input)
-            st.write("**Bioimpedance (Optional - use default if unknown):**")
-            tbw = st.number_input("Total Body Water (TBW) (%)", min_value=40.0, max_value=70.0, value=55.0)
-            protein_pct = st.number_input("Body Protein Content (%)", min_value=10.0, max_value=25.0, value=16.0)
-            fat_pct = st.number_input("Body Fat (%)", min_value=5.0, max_value=50.0, value=20.0)
-            muscle_mass = st.number_input("Muscle Mass (kg)", min_value=30.0, max_value=100.0, value=55.0)
-            bone_mass = st.number_input("Bone Mass (kg)", min_value=1.0, max_value=5.0, value=2.5)
+            # Bioimpedance measurements (REQUIRED for accurate prediction)
+            st.write("**Bioimpedance Measurements (Required for Prediction):**")
+            tbw = st.number_input("Total Body Water (TBW) (%)", min_value=40.0, max_value=70.0, value=55.0, help="Required for prediction")
+            ecw = st.number_input("Extracellular Water (ECW) (L)", min_value=10.0, max_value=30.0, value=15.0, help="Required for prediction")
+            icw = st.number_input("Intracellular Water (ICW) (L)", min_value=15.0, max_value=40.0, value=25.0, help="Required for prediction")
+            ect_tbw = st.number_input("Extracellular Fluid/Total Body Water (ECF/TBW)", min_value=0.3, max_value=0.7, value=0.4, help="Required for prediction")
+            protein_pct = st.number_input("Body Protein Content (%)", min_value=10.0, max_value=25.0, value=16.0, help="Required for prediction")
+            fat_pct = st.number_input("Body Fat (%)", min_value=5.0, max_value=50.0, value=20.0, help="Required for prediction")
+            tbfr = st.number_input("Total Body Fat Ratio (TBFR) (%)", min_value=5.0, max_value=50.0, value=20.0, help="Required for prediction")
+            lm_pct = st.number_input("Lean Mass (LM) (%)", min_value=40.0, max_value=80.0, value=60.0, help="Required for prediction")
+            vfr = st.number_input("Visceral Fat Rating", min_value=1, max_value=30, value=10, help="Required for prediction")
+            muscle_mass = st.number_input("Muscle Mass (kg)", min_value=30.0, max_value=100.0, value=55.0, help="Required for prediction")
+            bone_mass = st.number_input("Bone Mass (kg)", min_value=1.0, max_value=5.0, value=2.5, help="Required for prediction")
+            obesity_pct = st.number_input("Obesity (%)", min_value=0.0, max_value=50.0, value=15.0, help="Required for prediction")
+            tfc = st.number_input("Total Fat Content (kg)", min_value=5.0, max_value=50.0, value=15.0, help="Required for prediction")
+            vfa = st.number_input("Visceral Fat Area (cm²)", min_value=0.0, max_value=200.0, value=50.0, help="Required for prediction")
+            vma = st.number_input("Visceral Muscle Area (VMA) (kg)", min_value=20.0, max_value=80.0, value=40.0, help="Required for prediction")
+            hfa = st.number_input("Hepatic Fat Accumulation (HFA)", min_value=0.0, max_value=100.0, value=10.0, help="Required for prediction")
 
         # Calculate BMI again for consistency
         bmi = weight / (height/100)**2
@@ -126,10 +137,21 @@ def show_prediction_interface(model_artifacts):
                 'Weight': weight,
                 'Body Mass Index (BMI)': bmi,
                 'Total Body Water (TBW)': tbw,
+                'Extracellular Water (ECW)': ecw,
+                'Intracellular Water (ICW)': icw,
+                'Extracellular Fluid/Total Body Water (ECF/TBW)': ect_tbw,
+                'Total Body Fat Ratio (TBFR) (%)': tbfr,
+                'Lean Mass (LM) (%)': lm_pct,
                 'Body Protein Content (Protein) (%)': protein_pct,
-                'Body Fat (%)': fat_pct,
-                'Muscle Mass (MM)': muscle_mass,
+                'Visceral Fat Rating (VFR)': vfr,
                 'Bone Mass (BM)': bone_mass,
+                'Muscle Mass (MM)': muscle_mass,
+                'Obesity (%)': obesity_pct,
+                'Total Fat Content (TFC)': tfc,
+                'Visceral Fat Area (VFA)': vfa,
+                'Visceral Muscle Area (VMA) (Kg)': vma,
+                'Hepatic Fat Accumulation (HFA)': hfa,
+                'Body Fat (%)': fat_pct,
                 'Glucose': glucose,
                 'Total Cholesterol (TC)': tc,
                 'Low Density Lipoprotein (LDL)': ldl,
@@ -147,20 +169,25 @@ def show_prediction_interface(model_artifacts):
             }
 
             # Make prediction
-            if model_artifacts and len(patient_data) >= 10:  # We have at least some features
+            if model_artifacts and len(patient_data) >= 39:  # All 39 features required
                 try:
                     # Assign model, scaler, and feature_names here to ensure they are defined
                     model = model_artifacts['model']
                     scaler = model_artifacts['scaler']
                     feature_names = model_artifacts['feature_names']
 
-                    # Convert to DataFrame and select available features
+                    # Convert to DataFrame
                     patient_df = pd.DataFrame([patient_data])
 
-                    # Only use features that exist in our model
-                    available_features = [f for f in feature_names if f in patient_df.columns]
-                    if len(available_features) > 0:
-                        X_patient = patient_df[available_features]
+                    # Check if all required features are present
+                    missing_features = [f for f in feature_names if f not in patient_df.columns]
+                    if missing_features:
+                        st.error(f"Missing required features: {', '.join(missing_features)}")
+                        prediction_result = create_sample_prediction()
+                        st.info("Using demo prediction due to missing features")
+                    else:
+                        # All features present, proceed with prediction
+                        X_patient = patient_df[feature_names]  # Use all features in correct order
                         X_patient_scaled = scaler.transform(X_patient)
 
                         # Make prediction
@@ -176,16 +203,13 @@ def show_prediction_interface(model_artifacts):
                             'confidence': max(prediction_proba)
                         }
                         st.success("Prediction completed using trained model!")
-                    else:
-                        prediction_result = create_sample_prediction()
-                        st.info("ℹ Using demo prediction (insufficient features for full model)")
                 except Exception as e:
                     st.error(f"Prediction error: {str(e)}")
                     prediction_result = create_sample_prediction()
-                    st.info("ℹ Using demo prediction due to processing error")
+                    st.info("Using demo prediction due to processing error")
             else:
                 prediction_result = create_sample_prediction()
-                st.info("Using demo prediction (model not available or insufficient data)")
+                st.info("Using demo prediction (all 39 features required for accurate prediction)")
             # Show probabilities
             col_a, col_b = st.columns(2)
             with col_a:
@@ -280,6 +304,292 @@ def show_dataset_analysis():
 
         st.markdown("### Statistical Summary")
         st.dataframe(df.describe(), width='stretch')
+
+        # Add visualizations
+        st.markdown("---")
+        st.markdown("## 📊 Dataset Visualizations")
+
+        # Create tabs for different types of visualizations
+        viz_tab1, viz_tab2, viz_tab3 = st.tabs(["Distributions", "Relationships", "Correlations"])
+
+        with viz_tab1:
+            st.markdown("### Target Variable Distribution")
+            col_viz1, col_viz2 = st.columns(2)
+
+            with col_viz1:
+                # Pie chart for target distribution
+                fig, ax = plt.subplots(figsize=(6, 6))
+                target_counts = df['Gallstone Status'].value_counts()
+                labels = ['No Gallstone', 'Gallstone']
+                sizes = [target_counts.get(0, 0), target_counts.get(1, 0)]
+                colors = ['#66b3ff', '#ff9999']
+                ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+                ax.axis('equal')
+                ax.set_title('Gallstone Status Distribution')
+                st.pyplot(fig)
+
+            with col_viz2:
+                # Age distribution histogram
+                fig, ax = plt.subplots(figsize=(8, 5))
+                sns.histplot(data=df, x='Age', hue='Gallstone Status', multiple="stack", ax=ax)
+                ax.set_title('Age Distribution by Gallstone Status')
+                ax.set_xlabel('Age (years)')
+                ax.set_ylabel('Count')
+                st.pyplot(fig)
+
+            # Gender distribution
+            st.markdown("### Gender Distribution")
+            gender_counts = df['Gender'].value_counts()
+            fig, ax = plt.subplots(figsize=(6, 4))
+            gender_labels = ['Female', 'Male']
+            gender_sizes = [gender_counts.get(0, 0), gender_counts.get(1, 0)]
+            ax.bar(gender_labels, gender_sizes, color=['#ff9999', '#66b3ff'])
+            ax.set_title('Gender Distribution')
+            ax.set_ylabel('Count')
+            for i, v in enumerate(gender_sizes):
+                ax.text(i, v + 1, str(v), ha='center')
+            st.pyplot(fig)
+
+            # BMI Distribution
+            st.markdown("### BMI Distribution Analysis")
+            col_bmi1, col_bmi2 = st.columns(2)
+
+            with col_bmi1:
+                fig, ax = plt.subplots(figsize=(8, 5))
+                sns.histplot(data=df, x='Body Mass Index (BMI)', hue='Gallstone Status', multiple="stack", ax=ax)
+                ax.set_title('BMI Distribution by Gallstone Status')
+                ax.set_xlabel('BMI')
+                ax.set_ylabel('Count')
+                st.pyplot(fig)
+
+            with col_bmi2:
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.boxplot(data=df, x='Gallstone Status', y='Body Mass Index (BMI)', ax=ax)
+                ax.set_title('BMI Box Plot by Gallstone Status')
+                ax.set_xticklabels(['No Gallstone', 'Gallstone'])
+                ax.set_xlabel('Gallstone Status')
+                ax.set_ylabel('BMI')
+                st.pyplot(fig)
+
+            # Key Laboratory Values Distribution
+            st.markdown("### Key Laboratory Values Distribution")
+            lab_features = ['Glucose', 'Total Cholesterol (TC)', 'Triglyceride', 'C-Reactive Protein (CRP)', 'Vitamin D']
+
+            for i in range(0, len(lab_features), 2):
+                cols = st.columns(2)
+                for j in range(2):
+                    if i + j < len(lab_features):
+                        feature = lab_features[i + j]
+                        with cols[j]:
+                            fig, ax = plt.subplots(figsize=(6, 4))
+                            sns.histplot(data=df, x=feature, hue='Gallstone Status', multiple="stack", ax=ax)
+                            ax.set_title(f'{feature} Distribution')
+                            ax.set_xlabel(feature)
+                            ax.set_ylabel('Count')
+                            st.pyplot(fig)
+
+            # Bioimpedance Features Distribution
+            st.markdown("### Bioimpedance Features Distribution")
+            bio_features = ['Total Body Water (TBW)', 'Extracellular Water (ECW)', 'Intracellular Water (ICW)',
+                          'Lean Mass (LM) (%)', 'Body Fat (%)', 'Hepatic Fat Accumulation (HFA)']
+
+            for i in range(0, len(bio_features), 2):
+                cols = st.columns(2)
+                for j in range(2):
+                    if i + j < len(bio_features):
+                        feature = bio_features[i + j]
+                        with cols[j]:
+                            fig, ax = plt.subplots(figsize=(6, 4))
+                            sns.histplot(data=df, x=feature, hue='Gallstone Status', multiple="stack", ax=ax)
+                            ax.set_title(f'{feature} Distribution')
+                            ax.set_xlabel(feature)
+                            ax.set_ylabel('Count')
+                            st.pyplot(fig)
+
+        with viz_tab2:
+            st.markdown("### Feature Relationships")
+
+            col_rel1, col_rel2 = st.columns(2)
+
+            with col_rel1:
+                # BMI vs Age scatter plot
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='Age', y='Body Mass Index (BMI)', hue='Gallstone Status', ax=ax)
+                ax.set_title('BMI vs Age by Gallstone Status')
+                ax.set_xlabel('Age (years)')
+                ax.set_ylabel('BMI')
+                st.pyplot(fig)
+
+            with col_rel2:
+                # Vitamin D vs Age
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='Age', y='Vitamin D', hue='Gallstone Status', ax=ax)
+                ax.set_title('Vitamin D vs Age by Gallstone Status')
+                ax.set_xlabel('Age (years)')
+                ax.set_ylabel('Vitamin D (ng/mL)')
+                st.pyplot(fig)
+
+            # CRP vs BMI
+            st.markdown("### Inflammation vs Body Composition")
+            fig, ax = plt.subplots(figsize=(8, 6))
+            sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='C-Reactive Protein (CRP)', hue='Gallstone Status', ax=ax)
+            ax.set_title('CRP vs BMI by Gallstone Status')
+            ax.set_xlabel('BMI')
+            ax.set_ylabel('CRP (mg/L)')
+            st.pyplot(fig)
+
+            # Additional relationship plots
+            st.markdown("### Metabolic Syndrome Indicators")
+            col_met1, col_met2 = st.columns(2)
+
+            with col_met1:
+                # Glucose vs BMI
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='Glucose', hue='Gallstone Status', ax=ax)
+                ax.set_title('Glucose vs BMI by Gallstone Status')
+                ax.set_xlabel('BMI')
+                ax.set_ylabel('Glucose (mg/dL)')
+                st.pyplot(fig)
+
+            with col_met2:
+                # Triglyceride vs HDL
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='High Density Lipoprotein (HDL)', y='Triglyceride', hue='Gallstone Status', ax=ax)
+                ax.set_title('Triglyceride vs HDL by Gallstone Status')
+                ax.set_xlabel('HDL (mg/dL)')
+                ax.set_ylabel('Triglyceride (mg/dL)')
+                st.pyplot(fig)
+
+            # Liver function relationships
+            st.markdown("### Liver Function Analysis")
+            col_liver1, col_liver2 = st.columns(2)
+
+            with col_liver1:
+                # AST vs ALT
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='Alanin Aminotransferaz (ALT)', y='Aspartat Aminotransferaz (AST)', hue='Gallstone Status', ax=ax)
+                ax.set_title('AST vs ALT by Gallstone Status')
+                ax.set_xlabel('ALT (U/L)')
+                ax.set_ylabel('AST (U/L)')
+                # Add reference line for AST/ALT ratio
+                ax.plot([0, 200], [0, 200], 'r--', alpha=0.5, label='AST/ALT = 1')
+                ax.legend()
+                st.pyplot(fig)
+
+            with col_liver2:
+                # ALP vs GGT (if available) or ALP vs Age
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='Age', y='Alkaline Phosphatase (ALP)', hue='Gallstone Status', ax=ax)
+                ax.set_title('ALP vs Age by Gallstone Status')
+                ax.set_xlabel('Age (years)')
+                ax.set_ylabel('ALP (U/L)')
+                st.pyplot(fig)
+
+            # Bioimpedance relationships
+            st.markdown("### Body Composition Analysis")
+            col_bio1, col_bio2 = st.columns(2)
+
+            with col_bio1:
+                # Lean Mass vs Fat Mass
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='Lean Mass (LM) (%)', y='Body Fat (%)', hue='Gallstone Status', ax=ax)
+                ax.set_title('Lean Mass vs Body Fat by Gallstone Status')
+                ax.set_xlabel('Lean Mass (%)')
+                ax.set_ylabel('Body Fat (%)')
+                st.pyplot(fig)
+
+            with col_bio2:
+                # Hepatic Fat vs BMI
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.scatterplot(data=df, x='Body Mass Index (BMI)', y='Hepatic Fat Accumulation (HFA)', hue='Gallstone Status', ax=ax)
+                ax.set_title('Hepatic Fat vs BMI by Gallstone Status')
+                ax.set_xlabel('BMI')
+                ax.set_ylabel('Hepatic Fat Accumulation')
+                st.pyplot(fig)
+
+        with viz_tab3:
+            st.markdown("### Feature Correlations")
+
+            # Select numeric columns for correlation
+            numeric_cols = ['Age', 'Height', 'Weight', 'Body Mass Index (BMI)', 'Glucose',
+                          'Total Cholesterol (TC)', 'Low Density Lipoprotein (LDL)',
+                          'High Density Lipoprotein (HDL)', 'Triglyceride', 'Vitamin D',
+                          'C-Reactive Protein (CRP)', 'Hemoglobin (HGB)']
+
+            # Calculate correlation matrix
+            corr_matrix = df[numeric_cols].corr()
+
+            # Create heatmap
+            fig, ax = plt.subplots(figsize=(12, 10))
+            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0,
+                       square=True, linewidths=0.5, ax=ax)
+            ax.set_title('Correlation Matrix of Key Clinical Features')
+            plt.xticks(rotation=45, ha='right')
+            plt.yticks(rotation=0)
+            st.pyplot(fig)
+
+            # Top correlations with target
+            st.markdown("### Feature Importance (Correlation with Gallstone Status)")
+            target_corr = df[numeric_cols + ['Gallstone Status']].corr()['Gallstone Status'].abs().sort_values(ascending=False)
+            target_corr = target_corr.drop('Gallstone Status')  # Remove self-correlation
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            target_corr.head(10).plot(kind='barh', ax=ax, color='skyblue')
+            ax.set_title('Top 10 Features Correlated with Gallstone Status')
+            ax.set_xlabel('Absolute Correlation')
+            st.pyplot(fig)
+
+            # Extended correlation analysis
+            st.markdown("### Comprehensive Correlation Analysis")
+
+            # Include bioimpedance features
+            extended_cols = numeric_cols + [
+                'Total Body Water (TBW)', 'Extracellular Water (ECW)', 'Intracellular Water (ICW)',
+                'Extracellular Fluid/Total Body Water (ECF/TBW)', 'Lean Mass (LM) (%)',
+                'Body Fat (%)', 'Hepatic Fat Accumulation (HFA)', 'Obesity (%)'
+            ]
+
+            # Correlation with target variable
+            st.markdown("#### All Features vs Gallstone Status")
+            target_extended_corr = df[extended_cols + ['Gallstone Status']].corr()['Gallstone Status'].abs().sort_values(ascending=False)
+            target_extended_corr = target_extended_corr.drop('Gallstone Status')
+
+            fig, ax = plt.subplots(figsize=(12, 8))
+            target_extended_corr.plot(kind='barh', ax=ax, color='lightcoral')
+            ax.set_title('Feature Correlation with Gallstone Status (All Features)')
+            ax.set_xlabel('Absolute Correlation Coefficient')
+            st.pyplot(fig)
+
+            # Metabolic syndrome correlation matrix
+            st.markdown("#### Metabolic Syndrome Features Correlation")
+            metabolic_cols = ['Body Mass Index (BMI)', 'Glucose', 'Total Cholesterol (TC)',
+                            'Triglyceride', 'High Density Lipoprotein (HDL)', 'C-Reactive Protein (CRP)']
+
+            metabolic_corr = df[metabolic_cols].corr()
+
+            fig, ax = plt.subplots(figsize=(10, 8))
+            sns.heatmap(metabolic_corr, annot=True, cmap='YlOrRd', center=0,
+                       square=True, linewidths=0.5, ax=ax)
+            ax.set_title('Metabolic Syndrome Features Correlation Matrix')
+            plt.xticks(rotation=45, ha='right')
+            plt.yticks(rotation=0)
+            st.pyplot(fig)
+
+            # Bioimpedance correlation matrix
+            st.markdown("#### Body Composition Features Correlation")
+            bio_cols = ['Total Body Water (TBW)', 'Extracellular Water (ECW)', 'Intracellular Water (ICW)',
+                       'Extracellular Fluid/Total Body Water (ECF/TBW)', 'Lean Mass (LM) (%)',
+                       'Body Fat (%)', 'Hepatic Fat Accumulation (HFA)', 'Obesity (%)']
+
+            bio_corr = df[bio_cols].corr()
+
+            fig, ax = plt.subplots(figsize=(12, 10))
+            sns.heatmap(bio_corr, annot=True, cmap='Blues', center=0,
+                       square=True, linewidths=0.5, ax=ax)
+            ax.set_title('Body Composition Features Correlation Matrix')
+            plt.xticks(rotation=45, ha='right')
+            plt.yticks(rotation=0)
+            st.pyplot(fig)
 
     except Exception as e:
         st.error(f"Could not load dataset: {str(e)}")
