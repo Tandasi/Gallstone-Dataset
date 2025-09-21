@@ -4,7 +4,6 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime
 import os
 
 # Configure Streamlit page
@@ -42,12 +41,6 @@ def create_sample_prediction():
 def show_prediction_interface(model_artifacts):
     """Display the prediction interface"""
     st.header("Patient Risk Assessment")
-
-    if model_artifacts:
-        model = model_artifacts['model']
-        scaler = model_artifacts['scaler']
-        feature_names = model_artifacts['feature_names']
-        metrics = model_artifacts['model_metrics']
 
     # Main prediction interface
     col1, col2 = st.columns([2, 1])
@@ -156,6 +149,11 @@ def show_prediction_interface(model_artifacts):
             # Make prediction
             if model_artifacts and len(patient_data) >= 10:  # We have at least some features
                 try:
+                    # Assign model, scaler, and feature_names here to ensure they are defined
+                    model = model_artifacts['model']
+                    scaler = model_artifacts['scaler']
+                    feature_names = model_artifacts['feature_names']
+
                     # Convert to DataFrame and select available features
                     patient_df = pd.DataFrame([patient_data])
 
@@ -188,15 +186,6 @@ def show_prediction_interface(model_artifacts):
             else:
                 prediction_result = create_sample_prediction()
                 st.info("Using demo prediction (model not available or insufficient data)")
-
-            # Display results
-            st.markdown("### Prediction Results")
-
-            if prediction_result['prediction'] == 'Gallstone':
-                st.error(f"**HIGH RISK**: {prediction_result['prediction']}")
-            else:
-                st.success(f"**LOW RISK**: {prediction_result['prediction']}")
-
             # Show probabilities
             col_a, col_b = st.columns(2)
             with col_a:
@@ -346,9 +335,6 @@ def main():
     model_artifacts = load_model()
 
     if model_artifacts:
-        model = model_artifacts['model']
-        scaler = model_artifacts['scaler']
-        feature_names = model_artifacts['feature_names']
         metrics = model_artifacts['model_metrics']
 
         st.success("Model loaded successfully!")
