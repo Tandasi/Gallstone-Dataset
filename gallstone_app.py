@@ -311,7 +311,7 @@ def show_dataset_analysis():
 
         # Add visualizations
         st.markdown("---")
-        st.markdown("## 📊 Dataset Visualizations")
+        st.markdown("## Dataset Visualizations")
 
         # Create tabs for different types of visualizations
         viz_tab1, viz_tab2, viz_tab3 = st.tabs(["Distributions", "Relationships", "Correlations"])
@@ -539,7 +539,7 @@ def show_about_section():
         """)
 
     with col2:
-        st.markdown("### 🔧 Technical Details")
+        st.markdown("### Technical Details")
         st.markdown("""
         - **Model:** Gradient Boosting Classifier
         - **Dataset:** UCI Gallstone Dataset
