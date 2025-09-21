@@ -183,8 +183,6 @@ shap==0.42.1
 ### Web Framework
 ```txt
 streamlit==1.25.0
-flask==2.3.3
-gunicorn==21.2.0
 ```
 
 ### Development
@@ -239,9 +237,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact & Support
 
 **Author:** GIFT TANDASI  
-**Email:** [your.email@example.com]  
-**LinkedIn:** [Your LinkedIn Profile]  
-**GitHub:** [Your GitHub Profile]  
+**Email:** [gift@anga-tech.com]   
+**GitHub:** (https://github.com/Tandasi)]  
 
 ## Acknowledgments
 
@@ -272,6 +269,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This tool is for **research and educational purposes only**. Always consult qualified healthcare professionals for medical decisions. The model should not be used as the sole basis for clinical diagnosis or treatment decisions.
 
----
-
-**Built with love for advancing healthcare through AI**
