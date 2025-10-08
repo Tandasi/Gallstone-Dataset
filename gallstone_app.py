@@ -616,7 +616,6 @@ def main():
             • **Type:** Gradient Boosting  
             • **Status:** Demo Mode
             """)
-
     # Create tabs for different sections
     tab1, tab2, tab3 = st.tabs(["Prediction", "Dataset Analysis", "About"])
 
